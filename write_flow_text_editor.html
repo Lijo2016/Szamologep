@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WriteFlow - szövegszerkesztő</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f1f3f4;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      padding: 10px;
+      background: white;
+      border-bottom: 1px solid #ddd;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .toolbar button {
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+      background: #fff;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .toolbar button:hover {
+      background: #f0f0f0;
+    }
+
+    #editor {
+      max-width: 800px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      min-height: 80vh;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      outline: none;
+      white-space: pre-wrap;
+    }
+
+    .misspelled {
+      text-decoration: underline wavy red;
+    }
+
+    #contextMenu {
+      position: absolute;
+      display: none;
+      background: white;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      z-index: 1000;
+      min-width: 180px;
+    }
+
+    #contextMenu div {
+      padding: 8px;
+      cursor: pointer;
+    }
+
+    #contextMenu div:hover {
+      background: #eee;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="toolbar">
+    <button onclick="exec('bold')"><b>B</b></button>
+    <button onclick="exec('italic')"><i>I</i></button>
+    <button onclick="exec('underline')"><u>U</u></button>
+    <button onclick="exec('insertUnorderedList')">• Lista</button>
+    <button onclick="exec('insertOrderedList')">1. Lista</button>
+    <button onclick="exec('formatBlock','H1')">H1</button>
+    <button onclick="exec('formatBlock','H2')">H2</button>
+    
+  </div>
+
+  <div id="editor" contenteditable="true">Ide írj...</div>
+
+  <div id="contextMenu"></div>
+
+  <script>
+    let dictionary = JSON.parse(localStorage.getItem('dictionary') || '[]');
+    let selectedWord = '';
+
+    function exec(command, value = null) {
+      document.execCommand(command, false, value);
+    }
+
+    function save() {
+      localStorage.setItem('docs_editor_content', document.getElementById('editor').innerHTML);
+    }
+
+    function load() {
+      const content = localStorage.getItem('docs_editor_content');
+      if (content) document.getElementById('editor').innerHTML = content;
+    }
+
+    function clearDoc() {
+      document.getElementById('editor').innerHTML = '';
+    }
+
+    function isCorrect(word) {
+      if (!word) return true;
+      const w = word.toLowerCase();
+      if (dictionary.includes(w)) return true;
+      return /^[a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ]+$/.test(word);
+    }
+
+    function checkSpelling() {
+      const editor = document.getElementById('editor');
+      const text = editor.innerText;
+      const words = text.split(/(\s+)/);
+
+      editor.innerHTML = words.map(w => {
+        if (/\s+/.test(w)) return w;
+        return isCorrect(w) ? w : `<span class="misspelled">${w}</span>`;
+      }).join('');
+    }
+
+    const menu = document.getElementById('contextMenu');
+
+    document.getElementById('editor').addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      const sel = window.getSelection();
+      selectedWord = sel.toString().trim();
+      if (!selectedWord) return;
+
+      menu.innerHTML = `<div onclick="addToDictionary()">Felvétel a szótárba</div>`;
+      menu.style.display = 'block';
+      menu.style.left = e.pageX + 'px';
+      menu.style.top = e.pageY + 'px';
+    });
+
+    function addToDictionary() {
+      const word = selectedWord.toLowerCase();
+      if (!word) return;
+
+      if (!dictionary.includes(word)) {
+        dictionary.push(word);
+        localStorage.setItem('dictionary', JSON.stringify(dictionary));
+      }
+
+      hideMenu();
+      checkSpelling();
+    }
+
+    function hideMenu() {
+      menu.style.display = 'none';
+    }
+
+    document.addEventListener('click', hideMenu);
+  </script>
+
+</body>
+</html>
