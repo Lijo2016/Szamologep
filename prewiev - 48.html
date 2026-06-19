@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Számológép</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    background:linear-gradient(135deg,#d8e9ff,#ffd8ec);
+    transition:0.5s;
+}
+
+.calculator{
+    width:340px;
+    background:white;
+    padding:20px;
+    border-radius:20px;
+    box-shadow:0 0 15px rgba(0,0,0,.25);
+}
+
+h2{
+    text-align:center;
+    margin-top:0;
+}
+
+#display{
+    width:100%;
+    height:60px;
+    font-size:30px;
+    text-align:right;
+    padding:10px;
+    box-sizing:border-box;
+    margin-bottom:10px;
+}
+
+.buttons{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+}
+
+button{
+    height:60px;
+    font-size:22px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+button:hover{
+    transform:scale(1.05);
+}
+
+.info{
+    margin-top:15px;
+    text-align:center;
+    color:#555;
+    font-size:14px;
+}
+</style>
+
+</head>
+<body>
+
+<div class="calculator">
+
+<h2>Számológép</h2>
+
+<input id="display" readonly>
+
+<div class="buttons">
+
+<button onclick="clearDisplay()">C</button>
+<button onclick="append('/')">÷</button>
+<button onclick="append('x')">×</button>
+<button onclick="append('-')">−</button>
+
+<button onclick="append('7')">7</button>
+<button onclick="append('8')">8</button>
+<button onclick="append('9')">9</button>
+<button onclick="append('+')">+</button>
+
+<button onclick="append('4')">4</button>
+<button onclick="append('5')">5</button>
+<button onclick="append('6')">6</button>
+<button onclick="calculate()">=</button>
+
+<button onclick="append('1')">1</button>
+<button onclick="append('2')">2</button>
+<button onclick="append('3')">3</button>
+<button onclick="backspace()">⌫</button>
+
+<button onclick="append('0')">0</button>
+<button onclick="append('.')">.</button>
+<button onclick="randomNumber()">🎲</button>
+<button onclick="lucky()">🍀</button>
+
+</div>
+
+</div>
+
+<script>
+
+const display = document.getElementById("display");
+
+function append(value){
+    display.value += value;
+}
+
+function clearDisplay(){
+    display.value="";
+}
+
+function backspace(){
+    display.value=display.value.slice(0,-1);
+}
+
+function calculate(){
+
+    try{
+
+        display.value=eval(display.value);
+        changeBackground();
+
+    }catch{
+
+        display.value="Hiba";
+
+    }
+
+}
+
+function randomNumber(){
+
+    display.value=Math.floor(Math.random()*1000)+1;
+
+}
+
+function changeBackground(){
+
+    const h=Math.floor(Math.random()*360);
+
+    document.body.style.background=
+    `linear-gradient(135deg,
+    hsl(${h},75%,85%),
+    hsl(${(h+90)%360},75%,90%))`;
+
+}
+
+/* -------------------------------
+   Szerencseüzenetek
+-------------------------------- */
+
+const messages=[
+
+"🍀 Ma különösen szerencsés lehetsz!",
+"🚀 A matematika fejleszti a gondolkodást.",
+"✨ Minden nagy felfedezés számokkal kezdődött.",
+"😄 Mosolyogj egyet!",
+"🌟 Egy új ötlet bármikor megszülethet.",
+"📐 A kör kerülete: 2πr.",
+"🎉 Szuper munkát végzel!",
+"💎 A kitartás mindig meghozza a gyümölcsét.",
+"🌈 Valami jó történhet még ma.",
+"⭐ A kíváncsiság a tudás kulcsa.",
+"🔥 Soha ne add fel!",
+"🦉 Minden nap tanulhatsz valami újat.",
+"🎯 Közelebb vagy a célodhoz, mint gondolnád.",
+"☀️ Ma ragyogj úgy, mint a Nap!",
+"🧩 Minden problémának van megoldása.",
+"🚲 Kis lépésekből lesz a nagy siker.",
+"🎵 Egy kis zene mindig feldobja a napot.",
+"🌍 A világ tele van lehetőségekkel.",
+"📚 A tudás az egyik legjobb befektetés.",
+"🏆 Minden számítás egy újabb siker.",
+"🍎 Egy alma naponta távol tartja az orvost.",
+"🌠 Higgy magadban!",
+"🦋 Minden változás egy új kezdet.",
+"💡 A jó ötletek váratlanul érkeznek.",
+"🎲 Néha a szerencse csak egy dobásra van.",
+"🪙 Ma lehet, hogy rád mosolyog a szerencse.",
+"🌻 A pozitív gondolatok erőt adnak.",
+"🚀 Álmodj nagyot!",
+"🎈 Minden nap egy új lehetőség.",
+"🏅 Büszke lehetsz magadra!"
+
+];
+
+// Nyilvántartjuk, hogy hányszor jelent meg minden üzenet
+const shownCount = new Array(messages.length).fill(0);
+
+function lucky(){
+
+    if(display.value!=""){
+
+        try{
+
+            display.value=eval(display.value);
+
+        }catch{
+
+            display.value="Hiba";
+            return;
+
+        }
+
+    }
+
+    // Kisebb előfordulási szám
+    const min=Math.min(...shownCount);
+
+    // Azok közül választunk, amelyek a legkevesebbszer szerepeltek
+    const available=[];
+
+    for(let i=0;i<shownCount.length;i++){
+
+        if(shownCount[i]===min){
+
+            available.push(i);
+
+        }
+
+    }
+
+    // Véletlen választás
+    const chosen=
+        available[Math.floor(Math.random()*available.length)];
+
+    shownCount[chosen]++;
+
+    setTimeout(function(){
+
+        alert(messages[chosen]);
+        changeBackground();
+
+    },100);
+
+}
+
+/* -------------------------------
+   Billentyűzet támogatás
+-------------------------------- */
+
+document.addEventListener("keydown",function(e){
+
+    if("0123456789+-x/.".includes(e.key)){
+
+        append(e.key);
+
+    }
+
+    if(e.key==="Enter"){
+
+        calculate();
+
+    }
+
+    if(e.key==="Backspace"){
+
+        backspace();
+
+    }
+
+    if(e.key==="C"){
+
+        clearDisplay();
+
+    }
+
+    if(e.key==="c"){
+
+        clearDisplay();
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>
